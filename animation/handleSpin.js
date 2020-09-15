@@ -22,13 +22,13 @@ const start = (ref, delay) => {
 function stop(num, delay, ref) {
   Animated.sequence([
     Animated.decay(ref, {
-      velocity: -0.994,
+      velocity: -0.333,
       deceleration: 0.888,
     }),
     Animated.timing(ref, {
-      delay: delay * 1000,
+      delay: delay,
       toValue: num * 100,
-      duration: 2000,
+      duration: 3000,
     }),
   ]).start();
 }

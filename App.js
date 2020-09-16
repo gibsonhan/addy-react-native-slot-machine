@@ -3,47 +3,62 @@ import { StyleSheet, Text, View, Animated, Easing } from 'react-native';
 
 import Slot from './components/Slot';
 import Btn from './components/Btn';
+
+import { isEmpty } from './util/handleIsEmpty';
 import { handleSpinAll, handleStopAll } from './animation/handleSpin';
+
+import { fakeResponse } from './util/handleFakeResponse';
+import { END_SPINNERCONFIG, DEFAULT_SPINNERCONFIG } from './assets/data';
 
 export default function App() {
   const [isSpinning, setIsSpinning] = useState(false);
-  const slotOneAnim = useRef(new Animated.Value(0)).current;
-  const slotTwoAnim = useRef(new Animated.Value(0)).current;
-  const slotThreeAnim = useRef(new Animated.Value(0)).current;
-  const slotFourAnim = useRef(new Animated.Value(0)).current;
-  const slotFiveAnim = useRef(new Animated.Value(0)).current;
-  const slotSixAnim = useRef(new Animated.Value(0)).current;
-  const slots = [
-    { num: 1, ref: slotOneAnim },
-    { num: 2, ref: slotTwoAnim },
-    { num: 3, ref: slotThreeAnim },
-    { num: 4, ref: slotFourAnim },
-    { num: 5, ref: slotFiveAnim },
-    { num: 6, ref: slotSixAnim },
-  ];
-
-  const test = [1, 2, 3, 4, 5, 6];
-
-  let obj = test.map((item) => {
-    let spinAnim = useRef(new Animated.Value(0).current);
-    return { num: item, ref: spinAnim };
-  });
-
-  const spinAll = () => handleSpinAll(slots, isSpinning, setIsSpinning);
-  const stopAll = () => handleStopAll(slots, isSpinning, setIsSpinning);
+  const [slots, setSlots] = useState([]);
+  const [spinnerConfig, setSpinnerConfig] = useState({});
 
   useEffect(() => {
-    console.log(slotOneAnim);
-  }, [slotOneAnim]);
+    async function fetchInital() {
+      const response = await fakeResponse(END_SPINNERCONFIG, 0);
+      setSpinnerConfig(response);
+    }
+    fetchInital();
+  }, []);
+
+  useEffect(() => {
+    if (isEmpty(spinnerConfig)) return;
+    const reelCount = [...Array(spinnerConfig.reelCount).keys()];
+    const arr = reelCount.map((indx) => {
+      let spinAnim = new Animated.Value(0);
+      return {
+        num: indx,
+        ref: spinAnim,
+        result: spinnerConfig.result[indx],
+        preloadNum: spinnerConfig.preloadedNumbers[indx],
+      };
+    });
+
+    setSlots(arr);
+  }, [spinnerConfig]);
+
+  const spinAll = () => {
+    if (isEmpty(spinnerConfig)) return;
+    isSpinning ? setIsSpinning(true) : setIsSpinning(false);
+    handleSpinAll(slots, spinnerConfig);
+  };
+
+  if (isEmpty(spinnerConfig)) return <></>;
   return (
     <View style={styles.container}>
       <View style={styles.slotContainer}>
-        {slots.map((slot) => (
-          <Slot key={slot} slotNum={slot.num} animate={slot.ref} />
+        {slots.map((slot, indx) => (
+          <Slot
+            key={slot}
+            slotNum={indx}
+            animate={slot.ref}
+            preloadNum={slot.preloadNum}
+          />
         ))}
       </View>
-      <Btn color="grey" text="Spin" onPress={spinAll} />
-      <Btn color="red" text="Stop" onPress={stopAll} />
+      <Btn color="green" text="Spin" onPress={spinAll} />
     </View>
   );
 }

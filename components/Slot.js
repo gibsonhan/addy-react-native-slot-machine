@@ -1,19 +1,27 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, Animated } from 'react-native';
-import Btn from './Btn';
 
-const Slot = ({ animate, slotNum }) => {
+const Slot = ({ animate, slotNum, preloadNum }) => {
   return (
     <View style={styles.slotContainer}>
-      <ItemContainer key={slotNum} animate={animate} slotNum={slotNum} />
+      <ItemContainer
+        key={slotNum}
+        animate={animate}
+        slotNum={slotNum}
+        preloadNum={preloadNum}
+      />
     </View>
   );
 };
 
-const ItemContainer = ({ slotNum, animate }) => {
-  const items = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9].reverse();
+const ItemContainer = ({ slotNum, animate, preloadNum }) => {
+  const items = [...Array(preloadNum).keys()].reverse();
+  const calcOffset = -1 * ((100 * preloadNum) / 2);
+  const offset = preloadNum % 2 === 0 ? calcOffset + 50 : calcOffset - 50;
   return (
-    <View style={[styles.itemContainer, { transform: [{ translateY: -400 }] }]}>
+    <View
+      style={[styles.itemContainer, { transform: [{ translateY: offset }] }]}
+    >
       <Animated.View
         style={{
           transform: [{ translateY: animate }],
@@ -50,9 +58,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'column',
     position: 'absolute',
-    justifyContent: 'flex-start',
-    height: 100,
-    width: 100,
   },
   itemContainer: {
     width: 100,

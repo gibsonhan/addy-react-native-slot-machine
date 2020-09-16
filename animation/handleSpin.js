@@ -1,58 +1,41 @@
 import { Animated, Easing } from 'react-native';
-import { genRanNum } from '../util/handleRandNum';
 
-const start = (ref, delay) => {
+const start = (ref, delay, value, preload, spinTime, spinDiffTime) => {
+  console.log(value);
   Animated.sequence([
-    Animated.timing(ref, {
-      delay: delay * 100,
-      toValue: -95,
-      duration: 2000,
-      easing: Easing.in(),
-    }),
     Animated.loop(
       Animated.timing(ref, {
-        toValue: 900,
-        duration: 500,
+        delay: 100 * delay,
+        toValue: (preload - 1) * 100,
+        duration: spinDiffTime,
       }),
-      { iterations: 1000 },
+      { iterations: Math.floor(spinTime / spinDiffTime) },
     ),
-  ]).start();
-};
-
-function stop(num, delay, ref) {
-  Animated.sequence([
-    Animated.decay(ref, {
-      velocity: -0.333,
-      deceleration: 0.888,
+    Animated.timing(ref, {
+      toValue: 0,
+      duration: 1000,
     }),
     Animated.timing(ref, {
-      delay: delay,
-      toValue: num * 100,
-      duration: 3000,
+      delay: 300 * delay,
+      toValue: 100 * value,
+      easing: Easing.bounce,
+      duration: 2000,
     }),
   ]).start();
-}
-
-function handleSpinAll(arr, state, setState) {
-  if (state) return;
-  setState(true);
-
-  arr.map((slot, indx) => {
-    start(slot.ref, indx);
-  });
-}
-
-const handleStopAll = async (arr, state, setState) => {
-  if (!state) return;
-  let _randNum = genRanNum(100000, 999999);
-  let _randNumArr = Array.from(String(_randNum));
-
-  arr.map((slot, indx) => {
-    stop(_randNumArr[indx], indx, slot.ref);
-  });
-
-  setState(false);
 };
-console.log('sup2');
 
-export { handleStopAll, handleSpinAll };
+function handleSpinAll(arr, config) {
+  arr.map((slot, indx) => {
+    console.log(slot);
+    start(
+      slot.ref,
+      indx,
+      slot.result,
+      slot.preloadNum,
+      config.spinTime,
+      config.spinDifferenceTime,
+    );
+  });
+}
+
+export { handleSpinAll };
